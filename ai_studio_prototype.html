@@ -2736,6 +2736,18 @@ const MobileLocalFileSheet = ({ onClose, onPick }) => {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState('icon'); // icon | list
   const [sortKey, setSortKey] = React.useState('name');    // name | type | date | size | tag
+  const [searchScope, setSearchScope] = React.useState('recent'); // recent | device
+  const searchActive = search.trim().length > 0;
+  // 보기 옵션 시트
+  const [viewOptOpen, setViewOptOpen] = React.useState(false);
+  const [dd, setDd] = React.useState(null);            // 열린 드롭다운: sort | group | size | null
+  const [optSort, setOptSort] = React.useState('태그');
+  const [optGroup, setOptGroup] = React.useState('없음');
+  const [optSize, setOptSize] = React.useState('기본');
+  const [showExt, setShowExt] = React.useState(false);
+  const SORT_LIST = ['이름', '종류', '수정일', '최근 사용일', '생성일', '추가된 날짜', '크기', '태그'];
+  const GROUP_LIST = ['없음', '종류', '날짜', '크기', '공유자'];
+  const SIZE_LIST = ['작게', '기본'];
   // 기기(나의 iPhone) 내 파일/폴더 mock
   const ITEMS = [
     { id: 'f1', kind: 'pdf',    name: '2023 노조 영수증',          meta: '2024. 1. 17.',  sub: '393KB' },
@@ -2826,7 +2838,7 @@ const MobileLocalFileSheet = ({ onClose, onPick }) => {
         <button onClick={onClose} className="w-10 h-10 rounded-full bg-neutral-700/50 flex items-center justify-center text-white active:opacity-70">
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <span className="flex-1 text-center text-[18px] font-semibold text-white">나의 iPhone</span>
+        <span className="flex-1 text-center text-[18px] font-semibold text-white">{searchActive ? '검색' : '나의 iPhone'}</span>
         <div className="flex items-center rounded-full bg-neutral-700/50 overflow-hidden">
           <button onClick={onClose} className="w-10 h-10 flex items-center justify-center text-white active:opacity-70">
             <X className="w-[18px] h-[18px]" />
@@ -2865,25 +2877,116 @@ const MobileLocalFileSheet = ({ onClose, onPick }) => {
               </button>
             ))}
             <div className="h-px bg-white/15" />
-            <button onClick={() => setMenuOpen(false)} className="w-full flex items-center px-4 py-3 active:bg-white/10 transition">
+            <button onClick={() => { setMenuOpen(false); setViewOptOpen(true); }} className="w-full flex items-center px-4 py-3 active:bg-white/10 transition">
               <span className="text-[16px]">보기 옵션</span>
             </button>
           </div>
         </>
       )}
-      {/* 검색 — 알약형 + 마이크 */}
+      {/* 보기 옵션 — 아래에서 위로 올라오는 바텀시트 */}
+      {viewOptOpen && (() => {
+        const OptionRow = ({ id, label, value, options, ascending }) => (
+          <div className="relative">
+            <button onClick={() => setDd(d => d === id ? null : id)} className="w-full flex items-center justify-between px-4 py-3.5 active:bg-white/5 transition">
+              <span className="text-white text-[16px]">{label}</span>
+              <span className="flex items-center gap-1.5 text-neutral-400 text-[16px]">
+                {value}
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m8 9 4-4 4 4"/><path d="m16 15-4 4-4-4"/></svg>
+              </span>
+            </button>
+            {dd === id && (
+              <div className="absolute right-2 bottom-full mb-1 z-[60] min-w-[210px] max-h-[330px] overflow-y-auto rounded-2xl bg-neutral-700/95 backdrop-blur-xl border border-white/10 shadow-2xl py-1 menu-pop flex-carousel-track">
+                {options.map(o => (
+                  <button key={o} onClick={() => { id === 'sort' ? setOptSort(o) : id === 'group' ? setOptGroup(o) : setOptSize(o); setDd(null); }}
+                    className="w-full flex items-center gap-2 px-4 py-3 active:bg-white/10 transition">
+                    <span className="w-4 shrink-0">{value === o && <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}</span>
+                    <span className="flex-1 text-left">
+                      <span className="block text-white text-[16px] leading-tight">{o}</span>
+                      {value === o && ascending && <span className="block text-[12px] text-neutral-300">오름차순</span>}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+        return (
+          <div className="absolute inset-0 z-50 flex flex-col justify-end" onClick={() => { setViewOptOpen(false); setDd(null); }}>
+            <div className="absolute inset-0 bg-black/50" />
+            <div className="relative bg-neutral-900 rounded-t-[28px] sheet-slide-up px-4 pt-3 pb-9 shadow-[0_-8px_40px_rgba(0,0,0,0.5)]" onClick={e => e.stopPropagation()}>
+              {/* 드래그 핸들 + 헤더 */}
+              <div className="flex justify-center pb-1"><span className="w-9 h-1 rounded-full bg-neutral-600" /></div>
+              <div className="relative flex items-center justify-center py-1.5">
+                <span className="text-[17px] font-semibold text-white">보기 옵션</span>
+                <button onClick={() => { setViewOptOpen(false); setDd(null); }} className="absolute right-0 w-10 h-10 rounded-full bg-sky-500 flex items-center justify-center active:opacity-80">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+              </div>
+              {/* 닫기용 투명 백드롭 (드롭다운 열렸을 때 바깥 탭) */}
+              {dd && <div className="absolute inset-0 z-[55]" onClick={() => setDd(null)} />}
+              {/* 정렬 / 그룹화 */}
+              <div className="rounded-2xl bg-neutral-800/80 divide-y divide-neutral-700/60 mt-3">
+                <OptionRow id="sort" label="다음으로 정렬" value={optSort} options={SORT_LIST} ascending />
+                <OptionRow id="group" label="다음으로 그룹화" value={optGroup} options={GROUP_LIST} />
+              </div>
+              {/* 아이콘/목록 크기 */}
+              <div className="rounded-2xl bg-neutral-800/80 mt-3">
+                <OptionRow id="size" label="아이콘 및 목록 크기" value={optSize} options={SIZE_LIST} />
+              </div>
+              {/* 고급 */}
+              <p className="text-neutral-500 text-[13px] font-medium mt-5 mb-2 px-1">고급</p>
+              <div className="rounded-2xl bg-neutral-800/80 px-4 py-3.5 flex items-center justify-between">
+                <span className="text-white text-[16px]">모든 파일 확장자 보기</span>
+                <button onClick={() => setShowExt(v => !v)} className={`w-12 h-7 rounded-full p-0.5 transition ${showExt ? 'bg-emerald-500' : 'bg-neutral-600'}`}>
+                  <span className={`block w-6 h-6 rounded-full bg-white shadow transition-transform ${showExt ? 'translate-x-5' : ''}`} />
+                </button>
+              </div>
+              <p className="text-neutral-500 text-[12px] mt-2 px-1 leading-relaxed">파일 이름 확장자를 변경하는 경우 파일을 생성하는 데 사용된 앱으로 더 이상 열지 못할 수도 있습니다.</p>
+            </div>
+          </div>
+        );
+      })()}
+      {/* 검색 — 알약형 + 마이크(평소) / 지우기(검색 중) */}
       <div className="px-3 pb-3 shrink-0">
         <div className="flex items-center gap-2 px-3.5 h-11 rounded-full bg-neutral-800">
           <Search className="w-[18px] h-[18px] text-neutral-400" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="검색"
             className="flex-1 bg-transparent border-0 outline-none text-[15px] text-white placeholder:text-neutral-400" />
-          <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] text-neutral-400" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
+          {searchActive ? (
+            <button onClick={() => setSearch('')} className="w-5 h-5 rounded-full bg-neutral-500 flex items-center justify-center shrink-0 active:opacity-70">
+              <X className="w-3 h-3 text-neutral-900" strokeWidth={3} />
+            </button>
+          ) : (
+            <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] text-neutral-400" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
+          )}
         </div>
       </div>
+      {/* 검색 범위 세그먼트 — 검색 중에만 노출 */}
+      {searchActive && (
+        <div className="px-3 pb-3 shrink-0">
+          <div className="flex items-center gap-1 p-1 rounded-full bg-neutral-800">
+            {[{ k: 'recent', l: '최근 항목' }, { k: 'device', l: '나의 iPhone' }].map(s => (
+              <button key={s.k} onClick={() => setSearchScope(s.k)}
+                className={`flex-1 h-9 rounded-full text-[15px] font-medium transition ${searchScope === s.k ? 'bg-neutral-600 text-white' : 'text-neutral-400'}`}>
+                {s.l}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {/* 파일 목록 — 아이콘(그리드) / 목록(리스트) */}
       <div className="flex-1 overflow-y-auto px-3 pb-4">
         {list.length === 0 ? (
-          <p className="text-center text-neutral-500 text-[13px] py-12">검색 결과가 없습니다.</p>
+          searchActive ? (
+            /* 검색 결과 없음 — 중앙 빈 상태 */
+            <div className="flex flex-col items-center justify-center text-center px-8" style={{ minHeight: '55%' }}>
+              <Search className="w-16 h-16 text-neutral-500" strokeWidth={1.6} />
+              <p className="mt-6 text-[20px] font-bold text-white">'{search.trim()}'에 대한 결과 없음</p>
+              <p className="mt-2 text-[15px] text-neutral-500">맞춤법을 확인하거나 새로운 검색을 시도하십시오.</p>
+            </div>
+          ) : (
+            <p className="text-center text-neutral-500 text-[13px] py-12">검색 결과가 없습니다.</p>
+          )
         ) : viewMode === 'icon' ? (
           <div className="grid grid-cols-3 gap-x-3 gap-y-4">
             {list.map(it => (
@@ -2909,7 +3012,8 @@ const MobileLocalFileSheet = ({ onClose, onPick }) => {
           </div>
         )}
       </div>
-      {/* 하단 탭바 */}
+      {/* 하단 탭바 — 검색 중에는 숨김 */}
+      {!searchActive && (
       <div className="shrink-0 border-t border-neutral-800 flex items-stretch px-2 pt-1.5 pb-5">
         {[
           { icon: <Clock className="w-[22px] h-[22px]" />, label: '최근 항목' },
@@ -2924,6 +3028,7 @@ const MobileLocalFileSheet = ({ onClose, onPick }) => {
           </button>
         ))}
       </div>
+      )}
     </div>
   );
 };
