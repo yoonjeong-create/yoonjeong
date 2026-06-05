@@ -166,6 +166,37 @@ const PRETENDARD_CSS = `
   font-family: 'Pretendard', 'Pretendard_KR', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
   font-feature-settings: 'ss01';
 }
+
+/* 스트링키 표시 모드 — ON이면 기능 텍스트에 마커 + 키 배지가 기본 노출 */
+.strkey-mark {
+  outline: 1px dashed rgba(245,158,11,.7);
+  outline-offset: 1px;
+  border-radius: 3px;
+  position: relative;
+}
+.strkey-mark::after {
+  content: attr(data-strkey);
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateY(-100%);
+  background: #b45309;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  padding: 1px 4px;
+  border-radius: 4px 4px 4px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  pointer-events: none;
+  z-index: 9999;
+}
+/* 호버 시 더 도드라지게(겹쳐도 위로) */
+.strkey-mark:hover { outline-color: #b45309; }
+.strkey-mark:hover::after { background: #111827; z-index: 10000; }
 `;
 
 // ====== 공통 데이터 ======
@@ -224,6 +255,89 @@ const ASSISTANTS = [
 // 나의 어시스턴트 '제작중' 상태 ID set (프로토타입 데이터). Web/Mobile 어시스턴트 탐색에서 공유
 const DRAFT_MINE_IDS = new Set(['workout', 'algo', 'eng-coach', 'idea-bot']);
 const statusOf = (a) => DRAFT_MINE_IDS.has(a.id) ? 'draft' : 'public';
+
+// ====== 스트링키(i18n) 사전 ======
+// 서비스 기능 단위(메뉴명·기능명·동작명·필드명·상태문구)에만 키를 부여한다.
+// 사용자 입력/어시스턴트 응답 등 가변 콘텐츠는 의도적으로 제외.
+const STRING_KEYS = {
+  // 내비게이션 / 화면
+  '어시스턴트 탐색': 'nav.assistant.explore',
+  'AI 어시스턴트 탐색': 'page.assistant.explore.title',
+  '나의 어시스턴트': 'section.assistant.mine',
+  '전체 어시스턴트': 'section.assistant.all',
+  '나의 AI 어시스턴트 목록': 'section.assistant.mineList',
+  '이전 대화 기록': 'section.chat.history',
+  '저장된 배경 지식': 'section.knowledge.saved',
+  '메인': 'nav.tab.main',
+  '어시스턴트': 'nav.tab.assistant',
+  '응답': 'nav.tab.response',
+  // 동작(액션)
+  '새 대화': 'action.chat.new',
+  '새 어시스턴트 만들기': 'action.assistant.create',
+  '어시스턴트 만들기': 'action.assistant.create',
+  '만들기': 'action.create',
+  '취소': 'action.cancel',
+  '확인': 'action.confirm',
+  '저장': 'action.save',
+  '첨부': 'action.attach',
+  '파일 첨부': 'action.attach.file',
+  '파일 선택': 'action.file.select',
+  '사진/동영상 선택': 'action.media.select',
+  '드라이브에서 파일 선택': 'action.drive.select',
+  '카메라': 'action.camera',
+  '연결하기': 'action.connect',
+  '연결 해제': 'action.disconnect',
+  '해제하기': 'action.disconnect.confirm',
+  '전체보기': 'action.viewAll',
+  '더보기': 'action.more',
+  '접기': 'action.collapse',
+  '대화방 삭제': 'action.chat.delete',
+  '검색 및 실행': 'action.search.run',
+  '모델 선택': 'action.model.select',
+  '전송': 'action.send',
+  // 기능
+  '웹 검색': 'feature.webSearch',
+  '실시간 연동': 'feature.realtimeSync',
+  '커넥터': 'feature.connector',
+  // 필드 / 라벨
+  '모델': 'label.model',
+  '이름': 'field.name',
+  '설명': 'field.description',
+  '아이콘': 'field.icon',
+  '역할': 'field.role',
+  '분야': 'field.topic',
+  '시스템 프롬프트': 'field.systemPrompt',
+  '시작 질문': 'field.startQuestion',
+  '인사말': 'field.greeting',
+  '답변 규칙': 'field.answerRules',
+  '답변 창의성': 'field.answerCreativity',
+  '검색 기간': 'field.searchPeriod',
+  '대표 운영자': 'label.operator.main',
+  '운영자': 'label.operator',
+  '종류': 'label.type',
+  '크기': 'label.size',
+  '수정한 사람': 'label.modifiedBy',
+  '수정한 날짜': 'label.modifiedAt',
+  '생성한 날짜': 'label.createdAt',
+  '사용자': 'label.user',
+  // 정렬 / 필터
+  '인기순': 'sort.popular',
+  '최신순': 'sort.latest',
+  '오래된순': 'sort.oldest',
+  '전체': 'filter.all',
+  '공개': 'filter.public',
+  '제작중': 'filter.draft',
+  // 빈 상태 / 안내 문구
+  '검색 결과가 없습니다.': 'empty.searchResult',
+  '아직 등록된 어시스턴트가 없어요': 'empty.assistant',
+  '해당 상태의 어시스턴트가 없어요': 'empty.assistant.status',
+  '표시할 파일이 없습니다.': 'empty.file',
+  '표시할 어시스턴트가 없어요': 'empty.assistant.display',
+  '등록된 배경지식이 없습니다.': 'empty.knowledge',
+  '등록된 메일이 없습니다.': 'empty.mail',
+  '무엇을 도와드릴까요?': 'text.home.prompt',
+  '이렇게 시작해보세요': 'text.home.suggestion',
+};
 
 const greeting = (name = '정윤') => {
   const dayMap = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
@@ -461,7 +575,7 @@ const WebSidebar = ({ onGotoAssistants, onResumeChat, onNewChat, onStartChatWith
     </button>
     {/* 나의 AI 어시스턴트 목록 (최근 사용) */}
     {!slim && recentAssistants.length > 0 && (
-      <div data-feature="recent-assistants" className="mt-2">
+      <div data-feature="recent-assistants" data-sk="nav.assistant" className="mt-2">
         <button onClick={() => setAssistantsOpen(!assistantsOpen)} className="w-full flex items-center gap-1 px-2 py-1 rounded hover:bg-neutral-100 transition text-left">
           <ChevronDown className={`w-3 h-3 text-neutral-500 transition-transform ${assistantsOpen ? '' : '-rotate-90'}`} />
           <span className="text-[11px] font-medium text-neutral-600 flex-1">나의 AI 어시스턴트 목록</span>
@@ -475,7 +589,7 @@ const WebSidebar = ({ onGotoAssistants, onResumeChat, onNewChat, onStartChatWith
                 title={a.name}
                 className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-100 transition text-left">
                 <span className={`w-7 h-7 rounded-full ${a.color} flex items-center justify-center text-sm shrink-0`}>{a.icon}</span>
-                <span className="text-[13px] text-neutral-800 truncate flex-1">{a.name}</span>
+                <span data-sk-skip className="text-[13px] text-neutral-800 truncate flex-1">{a.name}</span>
               </button>
             ))}
             {recentAssistants.length > 5 && (
@@ -495,7 +609,7 @@ const WebSidebar = ({ onGotoAssistants, onResumeChat, onNewChat, onStartChatWith
         </button>
       </div>
     ) : (
-      <div data-feature="recent history-flow" className="mt-3 px-1 flex-1 overflow-y-auto min-h-0">
+      <div data-feature="recent history-flow" data-sk="nav.chat" className="mt-3 px-1 flex-1 overflow-y-auto min-h-0">
         <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-2 px-2 flex items-center gap-1">
           <Clock className="w-3 h-3" /> 이전 대화 기록
         </p>
@@ -505,7 +619,7 @@ const WebSidebar = ({ onGotoAssistants, onResumeChat, onNewChat, onStartChatWith
             return (
               <button key={c.id} onClick={() => onResumeChat && onResumeChat(c)} className="w-full text-left px-2 py-1.5 rounded hover:bg-neutral-100 transition">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-[11px] text-neutral-500 truncate">{a?.name || '알 수 없음'}</span>
+                  <span data-sk-skip className="text-[11px] text-neutral-500 truncate">{a?.name || '알 수 없음'}</span>
                   <span className="text-[10px] text-neutral-400 shrink-0">{formatRecentDate(c.time)}</span>
                 </div>
                 <p className="text-[12.5px] text-neutral-800 line-clamp-2 leading-snug">{c.title}</p>
@@ -1198,11 +1312,11 @@ const AssistantStoreMinimal = ({ onPreviewAssistant }) => {
   const renderCard = (a, i) => {
     const desc = a.desc && a.desc.length > 20 ? a.desc.slice(0, 20) + '...' : a.desc;
     return (
-      <button key={a.id} onClick={() => onPreviewAssistant(a)} className="flex gap-3 items-start text-left group p-4 rounded-2xl border border-neutral-200 hover:border-neutral-900 hover:shadow-sm transition bg-white">
+      <button key={a.id} data-sk="assistant.card" onClick={() => onPreviewAssistant(a)} className="flex gap-3 items-start text-left group p-4 rounded-2xl border border-neutral-200 hover:border-neutral-900 hover:shadow-sm transition bg-white">
         <span className="text-sm text-neutral-400 w-5 text-center pt-3 shrink-0 select-none font-medium">{i + 1}</span>
         <div className={`w-14 h-14 rounded-2xl ${a.color} flex items-center justify-center text-2xl shrink-0`}>{a.icon}</div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-[15px] font-semibold text-neutral-900 group-hover:underline mb-1">{a.name}</h3>
+          <h3 data-sk-skip className="text-[15px] font-semibold text-neutral-900 group-hover:underline mb-1">{a.name}</h3>
           <p className="text-[13px] text-neutral-600 leading-snug line-clamp-1">{desc}</p>
         </div>
       </button>
@@ -1707,7 +1821,7 @@ const WebResponse = ({ query, onBack, assistant, onNewChat, onResumeChat, recent
           </button>
           <div className="flex items-center gap-2">
             <div className={`w-7 h-7 rounded-lg ${a.color} flex items-center justify-center text-sm`}>{a.icon}</div>
-            <span className="text-sm font-medium text-neutral-900">{a.name}</span>
+            <span data-sk-skip className="text-sm font-medium text-neutral-900">{a.name}</span>
           </div>
           <div className="ml-auto flex items-center gap-0.5">
             <button onClick={onNewChat} title="새 채팅" className="w-8 h-8 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-neutral-900 transition">
@@ -1725,7 +1839,7 @@ const WebResponse = ({ query, onBack, assistant, onNewChat, onResumeChat, recent
           {/* 대화 영역 */}
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex-1 overflow-y-auto">
-              <div data-feature="response" className="max-w-3xl mx-auto px-8 py-8">
+              <div data-feature="response" data-sk="chat.message" className="max-w-3xl mx-auto px-8 py-8">
                 {/* 인사 — 어시스턴트 인삿말 */}
                 <p className="text-[14px] text-neutral-900 leading-relaxed mb-8">{greeting}</p>
 
@@ -1824,7 +1938,7 @@ const WebResponse = ({ query, onBack, assistant, onNewChat, onResumeChat, recent
                         <div className="flex justify-end mb-2">
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] text-amber-700">
                             <span className={`w-3.5 h-3.5 rounded ${m.assistant.color} flex items-center justify-center text-[9px]`}>{m.assistant.icon}</span>
-                            <span className="font-medium">{m.assistant.name}</span>
+                            <span data-sk-skip className="font-medium">{m.assistant.name}</span>
                             <span className="text-amber-600">에게 질문</span>
                           </span>
                         </div>
@@ -1837,11 +1951,11 @@ const WebResponse = ({ query, onBack, assistant, onNewChat, onResumeChat, recent
                       {different && (
                         <div className="mb-2 flex items-center gap-2">
                           <div className={`w-6 h-6 rounded-md ${m.assistant.color} flex items-center justify-center text-xs shrink-0`}>{m.assistant.icon}</div>
-                          <span className="text-[12px] text-neutral-700"><span className="font-semibold">{m.assistant.name}</span><span className="text-neutral-500"> 의 응답</span></span>
+                          <span className="text-[12px] text-neutral-700"><span data-sk-skip className="font-semibold">{m.assistant.name}</span><span className="text-neutral-500"> 의 응답</span></span>
                         </div>
                       )}
                       <p className="text-[14px] text-neutral-900 leading-relaxed">
-                        {m.assistant?.name || a.name}{' '}관점에서 정리해드릴게요. "<span className="text-neutral-600">{m.text}</span>"에 대한 답변을 곧 받아보실 수 있어요.
+                        <span data-sk-skip>{m.assistant?.name || a.name}</span>{' '}관점에서 정리해드릴게요. "<span className="text-neutral-600">{m.text}</span>"에 대한 답변을 곧 받아보실 수 있어요.
                       </p>
                     </div>
                   );
@@ -2119,7 +2233,7 @@ const MobileDrawer = ({ open, onClose, recentChats, onResumeChat, onGotoAssistan
         </div>
         {/* 나의 AI 어시스턴트 목록 */}
         {recentAssistants.length > 0 && (
-          <div className="px-3 pb-2 border-t border-neutral-800 pt-3">
+          <div data-sk="nav.assistant" className="px-3 pb-2 border-t border-neutral-800 pt-3">
             <button onClick={() => setAssistantsOpen(!assistantsOpen)} className="w-full flex items-center gap-1 px-2 py-1 rounded hover:bg-neutral-800 transition text-left">
               <ChevronDown className={`w-3 h-3 text-neutral-400 transition-transform ${assistantsOpen ? '' : '-rotate-90'}`} />
               <span className="text-[11px] font-medium text-neutral-300 flex-1">나의 AI 어시스턴트 목록</span>
@@ -2132,7 +2246,7 @@ const MobileDrawer = ({ open, onClose, recentChats, onResumeChat, onGotoAssistan
                     onClick={() => { onClose(); onStartChatWithAssistant && onStartChatWithAssistant(a); }}
                     className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-800 transition text-left">
                     <span className={`w-7 h-7 rounded-full ${a.color} flex items-center justify-center text-sm shrink-0`}>{a.icon}</span>
-                    <span className="text-[13px] text-white truncate flex-1">{a.name}</span>
+                    <span data-sk-skip className="text-[13px] text-white truncate flex-1">{a.name}</span>
                   </button>
                 ))}
                 {recentAssistants.length > 5 && (
@@ -2146,7 +2260,7 @@ const MobileDrawer = ({ open, onClose, recentChats, onResumeChat, onGotoAssistan
           </div>
         )}
         {/* 이전 대화 기록 */}
-        <div className="px-5 py-2 border-t border-neutral-800 flex-1 overflow-y-auto">
+        <div data-sk="nav.chat" className="px-5 py-2 border-t border-neutral-800 flex-1 overflow-y-auto">
           <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-2 mt-1">이전 대화 기록</p>
           <div className="space-y-1">
             {(recentChats || INITIAL_RECENT_CHATS).slice(0, 8).map(c => {
@@ -2154,7 +2268,7 @@ const MobileDrawer = ({ open, onClose, recentChats, onResumeChat, onGotoAssistan
               return (
                 <button key={c.id} onClick={() => { onClose(); onResumeChat(c); }} className="w-full text-left px-2 py-2 rounded-lg hover:bg-neutral-800/60 transition">
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[11px] text-neutral-400 truncate">{a?.name || 'WORKS Mate'}</span>
+                    <span data-sk-skip className="text-[11px] text-neutral-400 truncate">{a?.name || 'WORKS Mate'}</span>
                     <span className="text-[10px] text-neutral-500 shrink-0 ml-2">{formatRecentDate(c.time)}</span>
                   </div>
                   <p className="text-[12px] text-white line-clamp-2 leading-snug">{c.title}</p>
@@ -2228,59 +2342,21 @@ const MobileHeader = ({ title = 'WORKS Mate', onMenu, onClose, showAssistantPick
 };
 
 // ====== Mobile Composer ======
-const MobilePhotoGallery = ({ openFilePicker }) => {
-  const [selected, setSelected] = React.useState([]);
-  const toggle = (i) => setSelected(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
-  // 최근 사진 mock — 대화 스크린샷 톤 + 음식 사진 톤 섞어서
-  const PHOTOS = [
-    'linear-gradient(135deg,#1f2937,#0f172a)',
-    'linear-gradient(135deg,#334155,#1e293b)',
-    'linear-gradient(135deg,#0ea5e9,#0369a1)',
-    'linear-gradient(135deg,#1e3a5f,#0f172a)',
-    'linear-gradient(160deg,#fbbf24,#b45309)',
-    'linear-gradient(160deg,#f59e0b,#7c2d12)',
-    'linear-gradient(135deg,#374151,#111827)',
-    'linear-gradient(135deg,#475569,#1e293b)',
-    'linear-gradient(160deg,#facc15,#a16207)',
-    'linear-gradient(135deg,#1e293b,#0f172a)',
-    'linear-gradient(160deg,#fb923c,#9a3412)',
-    'linear-gradient(135deg,#0f766e,#134e4a)',
-  ];
-  return (
-    <div className="mt-2 bg-neutral-900 rounded-2xl">
-      <div className="flex gap-1.5 p-2 overflow-x-auto flex-carousel-track">
-        {/* 카메라 타일 (2행 높이) */}
-        <button onClick={openFilePicker} className="shrink-0 w-24 h-[196px] rounded-xl bg-neutral-800 border border-neutral-700 flex flex-col items-center justify-center gap-1.5 text-neutral-300">
-          <Camera className="w-7 h-7" />
-          <span className="text-[11px]">카메라</span>
-        </button>
-        {/* 최근 사진 2행 가로 스크롤 그리드 */}
-        <div className="grid grid-rows-2 grid-flow-col gap-1.5">
-          {PHOTOS.map((bg, i) => {
-            const isSel = selected.includes(i);
-            const order = isSel ? selected.indexOf(i) + 1 : null;
-            return (
-              <button key={i} onClick={() => toggle(i)} className="shrink-0 w-24 h-24 rounded-xl relative overflow-hidden" style={{ background: bg }}>
-                <span className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition ${isSel ? 'bg-emerald-500 text-white border-2 border-emerald-500' : 'border-2 border-white/85 bg-black/15'}`}>
-                  {isSel ? order : ''}
-                </span>
-                {isSel && <span className="absolute inset-0 ring-2 ring-inset ring-emerald-500 rounded-xl" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      {/* 하단 액션 바 */}
-      <div className="flex items-center justify-between px-3 py-2 border-t border-neutral-800">
-        <button onClick={openFilePicker} className="text-[12px] text-neutral-400 hover:text-neutral-200">전체보기</button>
-        <button onClick={openFilePicker} disabled={selected.length === 0}
-          className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition ${selected.length ? 'bg-emerald-500 text-white' : 'bg-neutral-700 text-neutral-500'}`}>
-          {selected.length ? `${selected.length}장 보내기` : '보내기'}
-        </button>
-      </div>
-    </div>
-  );
-};
+// 최근 사진 mock — 음식/야외 톤 그라데이션 (시스템 사진 피커 느낌)
+const MOBILE_PHOTO_BGS = [
+  'linear-gradient(135deg,#fde68a,#f59e0b)', 'linear-gradient(135deg,#86efac,#16a34a)',
+  'linear-gradient(135deg,#93c5fd,#2563eb)', 'linear-gradient(160deg,#fbbf24,#b45309)',
+  'linear-gradient(135deg,#a7f3d0,#0d9488)', 'linear-gradient(160deg,#fca5a5,#dc2626)',
+  'linear-gradient(135deg,#c4b5fd,#7c3aed)', 'linear-gradient(135deg,#fcd34d,#d97706)',
+  'linear-gradient(160deg,#bef264,#65a30d)', 'linear-gradient(135deg,#7dd3fc,#0284c7)',
+  'linear-gradient(160deg,#fdba74,#ea580c)', 'linear-gradient(135deg,#5eead4,#0f766e)',
+  'linear-gradient(135deg,#d9f99d,#4d7c0f)', 'linear-gradient(160deg,#fef08a,#ca8a04)',
+  'linear-gradient(135deg,#a5b4fc,#4f46e5)', 'linear-gradient(135deg,#6ee7b7,#059669)',
+  'linear-gradient(160deg,#fde68a,#b45309)', 'linear-gradient(135deg,#bae6fd,#0369a1)',
+  'linear-gradient(135deg,#fbcfe8,#db2777)', 'linear-gradient(160deg,#d9f99d,#3f6212)',
+  'linear-gradient(135deg,#fed7aa,#c2410c)', 'linear-gradient(135deg,#99f6e4,#0d9488)',
+  'linear-gradient(160deg,#fde047,#a16207)', 'linear-gradient(135deg,#c7d2fe,#4338ca)',
+];
 
 // ====== Mobile 첨부 액션 시트 (아래에서 위로 올라오는 모달) ======
 const MobileAttachSheet = ({ onClose, onPhoto, onFile, onDrive }) => {
@@ -2326,19 +2402,54 @@ const MobileAttachSheet = ({ onClose, onPhoto, onFile, onDrive }) => {
   );
 };
 
-// ====== Mobile 사진/동영상 선택 바텀시트 ======
-const MobilePhotoSheet = ({ openFilePicker, onClose }) => (
-  <div className="absolute inset-0 z-40 flex flex-col justify-end" onClick={onClose}>
-    <div className="absolute inset-0 bg-black/50" />
-    <div className="relative bg-neutral-900 rounded-t-3xl sheet-slide-up overflow-hidden pb-3" onClick={e => e.stopPropagation()}>
-      <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className="text-[15px] font-semibold text-white">사진/동영상 선택</span>
-        <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-neutral-400"><X className="w-5 h-5" /></button>
+// ====== Mobile 사진/동영상 선택 — 아래에서 위로 올라오는 전체화면 피커 ======
+const MobilePhotoSheet = ({ openFilePicker, onClose }) => {
+  const [selected, setSelected] = React.useState([]);
+  const toggle = (i) => setSelected(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
+  const confirm = () => { if (selected.length) openFilePicker(); };
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col justify-end" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40" />
+      {/* 전체화면 시트 — 아래에서 위로 슬라이드 */}
+      <div className="relative h-full bg-black flex flex-col sheet-slide-up rounded-[36px] overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* 헤더: X · 최근 항목 ▾ · 확인 */}
+        <div className="flex items-center gap-1 px-2 pt-9 pb-2 shrink-0">
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center text-white">
+            <X className="w-[22px] h-[22px]" />
+          </button>
+          <button className="flex items-center gap-1 px-1 text-white text-[17px] font-semibold">
+            최근 항목 <ChevronDown className="w-4 h-4 text-white" />
+          </button>
+          <button onClick={confirm} disabled={!selected.length}
+            className={`ml-auto px-3 py-1 text-[15px] font-medium transition ${selected.length ? 'text-white' : 'text-neutral-500'}`}>
+            확인
+          </button>
+        </div>
+        {/* 3열 그리드 */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-3 gap-[2px] pb-6">
+            {/* 카메라 타일 */}
+            <button onClick={openFilePicker} className="aspect-square bg-neutral-700 flex items-center justify-center text-white active:opacity-70">
+              <Camera className="w-8 h-8" strokeWidth={1.6} />
+            </button>
+            {MOBILE_PHOTO_BGS.map((bg, i) => {
+              const isSel = selected.includes(i);
+              const order = isSel ? selected.indexOf(i) + 1 : null;
+              return (
+                <button key={i} onClick={() => toggle(i)} className="aspect-square relative overflow-hidden active:opacity-90" style={{ background: bg }}>
+                  <span className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold transition ${isSel ? 'bg-emerald-500 text-white shadow' : 'border-2 border-white bg-black/15'}`} style={{ boxShadow: isSel ? 'none' : '0 0 4px rgba(0,0,0,0.35)' }}>
+                    {isSel ? order : ''}
+                  </span>
+                  {isSel && <span className="absolute inset-0 ring-[3px] ring-inset ring-emerald-500" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
-      <MobilePhotoGallery openFilePicker={openFilePicker} />
     </div>
-  </div>
-);
+  );
+};
 
 // ====== Mobile 모델 선택 바텀시트 ======
 const MobileModelSheet = ({ model, setModel, onClose }) => (
@@ -2807,10 +2918,10 @@ const MobileMain = ({ onSubmit, onGotoAssistants, onResumeChat, recentChats, onN
 const MobileAssistantCard = ({ a, showTopic = true, onClick }) => {
   const tm = showTopic ? TOPIC_CATEGORIES.find(c => c.id === a.topic) : null;
   return (
-    <button onClick={onClick} className="w-full text-left p-3.5 rounded-2xl bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-800 transition flex items-start gap-3">
+    <button onClick={onClick} data-sk="assistant.card" className="w-full text-left p-3.5 rounded-2xl bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-800 transition flex items-start gap-3">
       <div className={`w-11 h-11 rounded-2xl ${a.color} flex items-center justify-center text-xl shrink-0`}>{a.icon}</div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-white truncate">{a.name}</h3>
+        <h3 data-sk-skip className="text-sm font-semibold text-white truncate">{a.name}</h3>
         {tm && <span className="text-[10px] text-neutral-500 inline-flex items-center gap-0.5">{tm.icon} {tm.label}</span>}
         <p className="text-[11px] text-neutral-400 line-clamp-2 mt-0.5">{a.desc}</p>
       </div>
@@ -3069,7 +3180,7 @@ const MobileResponse = ({ query, onBack, onMenu, assistant, recentChats, onResum
   return (
     <>
       <MobileHeader title={a.name} onMenu={() => setShowDrawer(true)} onClose={onBack} onNewChat={onNewChat || onBack} onDeleteChat={onNewChat || onBack} />
-      <div data-feature="response" className="flex-1 overflow-y-auto px-4 py-4">
+      <div data-feature="response" data-sk="chat.message" className="flex-1 overflow-y-auto px-4 py-4">
         {/* 인사 — 어시스턴트 인삿말 */}
         <p className="text-[13px] text-neutral-200 leading-relaxed mb-4">{greetingText}</p>
         {!hasQuery && (
@@ -3142,7 +3253,7 @@ const MobileResponse = ({ query, onBack, onMenu, assistant, recentChats, onResum
                 <div className="flex justify-end mb-2">
                   <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-[10px] text-amber-300">
                     <span className={`w-3 h-3 rounded ${m.assistant.color} flex items-center justify-center text-[8px]`}>{m.assistant.icon}</span>
-                    <span className="font-medium">{m.assistant.name}</span>
+                    <span data-sk-skip className="font-medium">{m.assistant.name}</span>
                     <span className="text-amber-300/70">에게 질문</span>
                   </span>
                 </div>
@@ -3155,11 +3266,11 @@ const MobileResponse = ({ query, onBack, onMenu, assistant, recentChats, onResum
               {different && (
                 <div className="mb-2 flex items-center gap-2">
                   <div className={`w-5 h-5 rounded-md ${m.assistant.color} flex items-center justify-center text-[10px] shrink-0`}>{m.assistant.icon}</div>
-                  <span className="text-[11px] text-neutral-300"><span className="font-semibold text-white">{m.assistant.name}</span><span className="text-neutral-500"> 의 응답</span></span>
+                  <span className="text-[11px] text-neutral-300"><span data-sk-skip className="font-semibold text-white">{m.assistant.name}</span><span className="text-neutral-500"> 의 응답</span></span>
                 </div>
               )}
               <p className="text-[13px] text-neutral-200 leading-relaxed">
-                {m.assistant?.name || a.name} 관점에서 정리해드릴게요. "<span className="text-neutral-400">{m.text}</span>"에 대한 답변을 곧 받아보실 수 있어요.
+                <span data-sk-skip>{m.assistant?.name || a.name}</span> 관점에서 정리해드릴게요. "<span className="text-neutral-400">{m.text}</span>"에 대한 답변을 곧 받아보실 수 있어요.
               </p>
             </div>
           );
@@ -3513,6 +3624,66 @@ function Prototype() {
   const [selectedAssistant, setSelectedAssistant] = React.useState(null);
   const [previewAssistant, setPreviewAssistant] = React.useState(null);
   const [recentChats, setRecentChats] = React.useState(INITIAL_RECENT_CHATS);
+  const [controlsCollapsed, setControlsCollapsed] = React.useState(false);
+  const [stringKeyMode, setStringKeyMode] = React.useState(false);
+
+  // 스트링키 모드: 캔버스 내 기능 텍스트에 키 배지를 부착해 기본 노출
+  // - 사전(STRING_KEYS) 매칭은 의미 있는 키로, [data-sk] 스코프 내부는 모든 문장에 순번 키로 부여
+  // - [data-sk-skip] 하위(어시스턴트명 등 가변값)는 제외
+  React.useEffect(() => {
+    const host = document.getElementById('proto-canvas');
+    if (!host) return;
+    const HAS_LETTER = /[A-Za-z가-힣]/;
+    const mark = (el, key) => {
+      if (!el || el.hasAttribute('data-strkey')) return;
+      el.classList.add('strkey-mark');
+      el.setAttribute('data-strkey', key);
+      el.setAttribute('title', key);
+    };
+    const clear = () => host.querySelectorAll('[data-strkey]').forEach(el => {
+      el.classList.remove('strkey-mark');
+      el.removeAttribute('data-strkey');
+      el.removeAttribute('title');
+    });
+    if (!stringKeyMode) { clear(); return; }
+    let raf = 0;
+    const apply = () => {
+      clear();
+      // 1) 사전 매칭 — 메뉴/동작/필드 등 고정 라벨
+      const dw = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, null);
+      const dictHits = [];
+      let n;
+      while ((n = dw.nextNode())) {
+        const t = (n.nodeValue || '').trim();
+        if (t && STRING_KEYS[t] && !(n.parentElement && n.parentElement.closest('[data-sk-skip]'))) {
+          dictHits.push([n.parentElement, STRING_KEYS[t]]);
+        }
+      }
+      dictHits.forEach(([el, key]) => mark(el, key));
+      // 2) 스코프 자동 키 — 목록/카드/대화 등 모든 문장(어시스턴트명 제외)
+      host.querySelectorAll('[data-sk]').forEach(scope => {
+        const prefix = scope.getAttribute('data-sk');
+        let i = 0;
+        const sw = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, null);
+        const hits = [];
+        let tn;
+        while ((tn = sw.nextNode())) {
+          const t = (tn.nodeValue || '').trim();
+          if (!t || !HAS_LETTER.test(t)) continue;
+          const el = tn.parentElement;
+          if (!el || el.hasAttribute('data-strkey')) continue;
+          if (el.closest('[data-sk-skip]')) continue;
+          hits.push(el);
+        }
+        hits.forEach(el => mark(el, `${prefix}.${++i}`));
+      });
+    };
+    const schedule = () => { if (raf) cancelAnimationFrame(raf); raf = requestAnimationFrame(apply); };
+    schedule();
+    const obs = new MutationObserver(schedule);
+    obs.observe(host, { childList: true, subtree: true });
+    return () => { obs.disconnect(); if (raf) cancelAnimationFrame(raf); clear(); };
+  }, [stringKeyMode, platform, screen]);
 
   const handleSubmit = (q, assistant) => {
     if (!q || !q.trim()) return;
@@ -3595,40 +3766,71 @@ function Prototype() {
   return (
     <div className="min-h-screen bg-neutral-100 pretendard">
       <style>{PRETENDARD_CSS}</style>
-      {/* 컨트롤 바 */}
+      {/* 컨트롤 바 (접기/펴기) */}
       <div className="bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-6 flex-wrap">
-          <div>
-            <h1 className="text-base font-semibold text-neutral-900 tracking-tight">AI Studio 메인화면 개편 프로토타입</h1>
-            <p className="text-[11px] text-neutral-500">v1.0</p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setControlsCollapsed(v => !v)}
+              title={controlsCollapsed ? '펼치기' : '접기'}
+              className="w-7 h-7 rounded-lg hover:bg-neutral-100 inline-flex items-center justify-center transition shrink-0 text-neutral-500"
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform ${controlsCollapsed ? '-rotate-90' : ''}`} />
+            </button>
+            <div>
+              <h1 className="text-base font-semibold text-neutral-900 tracking-tight">AI Studio 메인화면 개편 프로토타입</h1>
+              {!controlsCollapsed && <p className="text-[11px] text-neutral-500">v1.0</p>}
+            </div>
           </div>
           <div className="ml-auto flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
-              <button onClick={() => { setPlatform('web'); setScreen('main'); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${platform === 'web' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>Web</button>
-              <button onClick={() => { setPlatform('mobile'); setScreen('main'); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${platform === 'mobile' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>Mobile</button>
-            </div>
-            <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
-              <button onClick={() => setScreen('main')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${screen === 'main' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>메인</button>
-              <button onClick={() => setScreen('assistants')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${screen === 'assistants' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>어시스턴트</button>
-              <button onClick={() => setScreen('response')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${screen === 'response' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>응답</button>
-            </div>
+            {/* 스트링키 on/off 토글 — 항상 노출 */}
+            <button
+              onClick={() => setStringKeyMode(v => !v)}
+              title="기능 텍스트에 스트링키를 툴팁으로 표시"
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition inline-flex items-center gap-1.5 border ${stringKeyMode ? 'bg-amber-500 text-white border-amber-500 shadow-sm' : 'bg-white text-neutral-600 border-neutral-300 hover:bg-neutral-50'}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${stringKeyMode ? 'bg-white' : 'bg-neutral-400'}`} />
+              스트링키 {stringKeyMode ? 'ON' : 'OFF'}
+            </button>
+            {!controlsCollapsed && (
+              <>
+                <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
+                  <button onClick={() => { setPlatform('web'); setScreen('main'); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${platform === 'web' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>Web</button>
+                  <button onClick={() => { setPlatform('mobile'); setScreen('main'); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${platform === 'mobile' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>Mobile</button>
+                </div>
+                <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
+                  <button onClick={() => setScreen('main')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${screen === 'main' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>메인</button>
+                  <button onClick={() => setScreen('assistants')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${screen === 'assistants' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>어시스턴트</button>
+                  <button onClick={() => setScreen('response')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${screen === 'response' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500'}`}>응답</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 pb-3">
-          <div className="flex items-center gap-2 text-[11px] text-neutral-500">
-            <span className="font-medium text-neutral-700">현재:</span>
-            <span>{platform === 'web' ? '🖥️ Web (라이트)' : '📱 Mobile (다크)'}</span>
-            <span>·</span>
-            <span>
-              {screen === 'main' && '메인화면'}
-              {screen === 'assistants' && '어시스턴트 탐색 페이지'}
-              {screen === 'response' && '응답 화면'}
-            </span>
+        {!controlsCollapsed && (
+          <div className="max-w-7xl mx-auto px-6 pb-3">
+            <div className="flex items-center gap-2 text-[11px] text-neutral-500">
+              <span className="font-medium text-neutral-700">현재:</span>
+              <span>{platform === 'web' ? '🖥️ Web (라이트)' : '📱 Mobile (다크)'}</span>
+              <span>·</span>
+              <span>
+                {screen === 'main' && '메인화면'}
+                {screen === 'assistants' && '어시스턴트 탐색 페이지'}
+                {screen === 'response' && '응답 화면'}
+              </span>
+              {stringKeyMode && (
+                <>
+                  <span>·</span>
+                  <span className="text-amber-600 font-medium">스트링키 표시 중 — 각 기능 텍스트 위에 키가 기본 노출됩니다</span>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* 캔버스 */}
+      <div id="proto-canvas">
       {platform === 'web' ? (
         <div className="bg-neutral-100 p-6">
           <div className="max-w-7xl mx-auto">
@@ -3649,6 +3851,7 @@ function Prototype() {
 
       {/* 어시스턴트 상세 — Web 한정 (모바일은 MobileFrame 내부에 렌더) */}
       {platform === 'web' && <AssistantDetailModal assistant={previewAssistant} onClose={() => setPreviewAssistant(null)} onStartChat={handleSelectAssistant} />}
+      </div>
     </div>
   );
 }
